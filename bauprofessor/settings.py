@@ -18,11 +18,11 @@ LOG_STDOUT = True
 LOG_FILE = './scrapy_output.txt'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = 'bauprofessor (+http://www.yourdomain.com)'
+USER_AGENT = 'Civil Engineering Keyword Crawler (+http://asv.informatik.uni-leipzig.de/)'
 
 # Obey robots.txt rules
-ROBOTSTXT_OBEY = True
-
+#ROBOTSTXT_OBEY = True
+ROBOTSTXT_OBEY = False
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
 
@@ -43,7 +43,7 @@ CONCURRENT_REQUESTS_PER_DOMAIN = 4
 # Override the default request headers:
 #DEFAULT_REQUEST_HEADERS = {
 #   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-#   'Accept-Language': 'en',
+#   'Accept-Language': 'en,de',
 #}
 
 # Enable or disable spider middlewares

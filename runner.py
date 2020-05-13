@@ -8,7 +8,7 @@ try:
         [
             'scrapy',
             'crawl',
-            'Bauprofessor',
+            'Baunormenlexikon',
             '-o',
             'out.json',
         ]

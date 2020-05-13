@@ -12,13 +12,17 @@ class BauprofessorItem(scrapy.Item):
 
 
 class BauprofessorSpider(scrapy.Spider):
+
     name = "Bauprofessor"
 
     start_urls = [
             'https://www.bauprofessor.de/lexikon/a/0',
     ]
 
-        
+
+
+
+
     def parse(self,response):
         
         links = response.xpath('//a/@href').extract()
@@ -27,7 +31,7 @@ class BauprofessorSpider(scrapy.Spider):
         for link in links:
             #absolute_url = self.BASE_URL + link
             if 'lexikon' in link:
-                yield scrapy.Request(link, callback=self.parse)
+                yield scrapy.Request(link, callback=self.parse, )
             else:
                 yield scrapy.Request(link, callback=self.parseText)
 

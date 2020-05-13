@@ -1,0 +1,3 @@
+.mypy_cache
+bauprofessor/__pycache__/*
+bauprofessor/spiders/__pycache__/*
