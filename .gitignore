@@ -1,3 +1,6 @@
 .mypy_cache
-bauprofessor/__pycache__/*
-bauprofessor/spiders/__pycache__/*
+BauGraph/bauprofessor/__pycache__/*
+BauGraph/bauprofessor/spiders/__pycache__/*
+\.idea/
+
+BauGraph/__pycache__/

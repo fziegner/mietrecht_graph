@@ -1,0 +1,4 @@
+scrapy
+tqdm
+networkx
+python-igraph
