@@ -32,3 +32,30 @@ You can also get a igraph representation with
 bg.igraph()
 ```
 You can use this to manipulate the graph further. More Information coming up..
+
+-------
+
+KnowledgeBase
+
+```python
+import BauGraph
+kb = BauGraph.KnowledgeBase("name of your knowledge base file")
+
+# See a list of contained documents
+docs = kb.list_documents()
+
+# Get all neighbours of a document with all attributes
+kb.get_neighbors(docs[0], True)
+
+#See the content of the document
+kb.get_attr(docs[0], "content")
+
+# Show document names of similar documents
+kb.most_similar(docs[0])
+
+# you can also add new pdfs to the knowledgebase
+kb.add("path_to_new_pdf.pdf")
+
+# And save the modified graph
+kb.save("save.gexf")
+```

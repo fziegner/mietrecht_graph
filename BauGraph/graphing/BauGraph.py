@@ -405,6 +405,10 @@ def main():
         elif args.format.endswith("gml"):
             b.to_gml(args.output + "." + args.format.replace(".", ""))
 
-
-if __name__ == "__main__":
-    main()
+# #
+# # if __name__ == "__main__":
+# #     main()
+#
+# bg = BauGraph("output/")
+# bg.add_keyword_in_text()
+# bg.graph

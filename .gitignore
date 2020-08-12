@@ -4,3 +4,5 @@ BauGraph/bauprofessor/spiders/__pycache__/*
 \.idea/
 
 BauGraph/__pycache__/
+
+*.pyc

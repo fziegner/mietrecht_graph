@@ -9,7 +9,7 @@ setup(
     author='Janos Borst',
     author_email='',
 
-    install_requires=["scrapy",
+    install_requires=["scrapy","spacy","pdftotext",
               "tqdm",
               "networkx",
               "python-igraph"],
