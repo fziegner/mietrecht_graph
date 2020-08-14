@@ -1,6 +1,7 @@
-# BauGraph
+# MietGraph
 
-Creating a knowledge graph about the construction industry.
+Creating a knowledge graph about the rent stuff.
+This is a fork of [BauGraph](https://git.informatik.uni-leipzig.de/dmw/civil_engineering/bauprofessor_crawler)
 
 
 ## Create the graph 
