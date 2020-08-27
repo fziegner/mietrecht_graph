@@ -10,11 +10,18 @@ from .beuth_vob_crawler import BeuthVOBSpider
 from .HausberaterSpider import HausberaterSpider
 from .HOAI import HOAISpider
 
+from .JuraBasicSpider import JuraBasicSpider
+from .MietrechtEinfachSpider import MietrechtEinfachSpider
+from .MietrechtLexikonSpider import MietrechtLexikonSpider
+
 Spiders = [
     BauprofessorSpider,
     BeuthLexSpider,
     BeuthDINSpider,
     BeuthVOBSpider,
     HausberaterSpider,
-    HOAISpider
+    HOAISpider,
+    JuraBasicSpider,
+    MietrechtEinfachSpider,
+    MietrechtLexikonSpider
 ]
