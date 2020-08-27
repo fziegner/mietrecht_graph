@@ -16,7 +16,14 @@ class MietrechtEinfachSpider(scrapy.Spider):
 
         links = set(response.xpath('//*[@id="right"]/a/@href').getall())
 
+        cleaned_links = []
         for link in links:
+            if not link.startswith("http"):
+                cleaned_links.append("http://www.mietrecht-einfach.de/" + link)
+            else:
+                cleaned_links.append(link)
+
+        for link in cleaned_links:
             if 'mietrecht' in link:
                 yield scrapy.Request(link, callback=self.parse)
             else:

@@ -10,7 +10,7 @@ class MietrechtLexikonItem(scrapy.Item):
 class MietrechtLexikonSpider(scrapy.Spider):
 
     name = "MietrechtLexikon"
-    start_urls = ['https://www.mietrechtslexikon.de/a1lexikon2/katalog_neu.htm',]
+    start_urls = ['https://www.mietrechtslexikon.de/a1lexikon2/katalog_neu.htm']
 
     def parse(self, response):
 
