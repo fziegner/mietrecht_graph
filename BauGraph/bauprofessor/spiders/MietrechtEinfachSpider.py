@@ -18,13 +18,14 @@ class MietrechtEinfachSpider(scrapy.Spider):
 
         cleaned_links = []
         for link in links:
-            if not link.startswith("http"):
-                cleaned_links.append("http://www.mietrecht-einfach.de/" + link)
-            else:
-                cleaned_links.append(link)
+            if link.endswith(".html"):
+                if not link.startswith("http"):
+                    cleaned_links.append("http://www.mietrecht-einfach.de/" + link)
+                else:
+                    cleaned_links.append(link)
 
         for link in cleaned_links:
-            if 'mietrecht' in link:
+            if 'lexikon' in link:
                 yield scrapy.Request(link, callback=self.parse)
             else:
                 yield scrapy.Request(link, callback=self.parseText)
@@ -37,10 +38,19 @@ class MietrechtEinfachSpider(scrapy.Spider):
             tmp_item = MietrechtEinfachItem()
             tmp_item['page_url'] =  str(response.url)
             tmp_item['title'] = response.xpath('//*[@id="right"]/h2/text()').get()
+            if not tmp_item['title'] or "Checkliste" in tmp_item['titel']:
+                tmp_item['title'] = response.xpath('//*[@id="right"]/h1/text()').get()
             text = re.sub("[\n\r\t]","",response.xpath('string(//*[@id="right"])').get())
             text = re.sub("<.*?\>","",text) #delete all strings between angle brackets
-            tmp_item['text'] = text.split(title,1)[1].split("Zurück zum Mietrecht")[0]
-            tmp_item['crosslinks'] = set(response.xpath('//*[@id="right"]/a/@href').getall())
+            tmp_item['text'] = text.split(tmp_item['title'],1)[1].split("Zurück zum Mietrecht")[0].split("Checkliste")[0].split("Ihre Frage")[0]
+            crosslinks = set(response.xpath('//*[@id="right"]/a/@href').getall())
+            cleaned_crosslinks = []
+            for link in crosslinks:
+                if not link.startswith("http"):
+                    cleaned_crosslinks.append("http://www.mietrecht-einfach.de/" + link)
+                else:
+                    cleaned_crosslinks.append(link)
+            tmp_item['crosslinks'] = cleaned_crosslinks
             yield tmp_item
         else:
             print("Nothing to Scrape!")
