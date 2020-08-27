@@ -31,7 +31,11 @@ class MietrechtLexikonSpider(scrapy.Spider):
             tmp_item = MietrechtLexikonItem()
             tmp_item['page_url'] =  str(response.url)
             tmp_item['title'] = response.xpath('//*[@class="column one"]/h1/text()').get()
-            tmp_item['text'] = response.xpath('string(//*[@class="the_content_wrapper"])').get()
+            sub_title = response.xpath('string(//*[@class="the_content_wrapper"]/h2)').get()
+            if sub_title:
+                tmp_item['text'] = sub_title + " " + response.xpath('string(//*[@class="the_content_wrapper"])').get().split(sub_title)[2]
+            else:
+                tmp_item['text'] = response.xpath('string(//*[@class="the_content_wrapper"])').get()
             tmp_item['crosslinks'] = response.xpath('//*[@class="the_content_wrapper"]/*[@class="schriften"]/a/@href').extract()
             yield tmp_item
         else:
