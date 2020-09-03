@@ -11,10 +11,50 @@ def parse_jurabasic(file = "output/jurabasic.json"):
     print("123")
 
 def parse_mietrechteinfach(file = "output/mietrechteinfach.json"):
-    print("123")
+    file = pathlib.Path(file)
+    if not file.exists():
+        print(f"No such file: {file.name}.")
+        return False
+
+    with open(file, "r") as f:
+        content = json.load(f)
+
+    g=nx.DiGraph()
+    g.graph["name"] = "mietrechteinfach"
+
+    for entry in content:
+        node = {"url": entry["page_url"],
+                "text": entry["text"]}
+        g.add_node(entry["title"], **node)
+
+    for entry in content:
+        targets = [x for x in g.nodes if g.nodes[x].get("url","") in entry["crosslinks"]]
+        for t in targets:
+            g.add_edge(entry["title"], t, t="crosslink")
+    return g
 
 def parse_mietrechtlexikon(file = "output/mietrechtlexikon.json"):
-    print("123")
+    file = pathlib.Path(file)
+    if not file.exists():
+        print(f"No such file: {file.name}.")
+        return False
+
+    with open(file, "r") as f:
+        content = json.load(f)
+
+    g=nx.DiGraph()
+    g.graph["name"] = "mietrechtlexikon"
+
+    for entry in content:
+        node = {"url": entry["page_url"],
+                "text": entry["text"]}
+        g.add_node(entry["title"], **node)
+
+    for entry in content:
+        targets = [x for x in g.nodes if g.nodes[x].get("url","") in entry["crosslinks"]]
+        for t in targets:
+            g.add_edge(entry["title"], t, t="crosslink")
+    return g
 
 def recursive_compose(l):
     if len(l) == 0:
@@ -39,18 +79,18 @@ def compare_two_graphs(g1, g2):
     print("Graph1 No. edges:", len(compose_greaph), "|Difference:", (len(g1.edges)+len(g2.edges))-len(compose_greaph.edges))
     print("-----------------------------\n\n")
 
-class BauGraph:
+class MietGraph:
     def __init__(self, dir="output/"):
         """
         Initilialize the Graph
         :param dir: The output directory of the crawling process
         """
         dir=pathlib.Path(dir)
-        self.jb = parse_jurabasic(dir / "jurabasic.json")
+        #self.jb = parse_jurabasic(dir / "jurabasic.json")
         self.mre = parse_mietrechteinfach(dir / "mietrechteinfach.json")
         self.mrl = parse_mietrechtlexikon(dir / "mietrechtlexikon.json")
 
-        self.all = [self.jb,
+        self.all = [#self.jb,
                     self.mre,
                     self.mrl]
 
@@ -64,7 +104,7 @@ class BauGraph:
         for comb in itertools.combinations(self.all, 2):
             compare_two_graphs(*comb)
 
-    def to_gexf(self, file="bauprofesser.gexf"):
+    def to_gexf(self, file="mietgraph.gexf"):
         """
         Write to GEXF format
         :param file:
@@ -72,7 +112,7 @@ class BauGraph:
         """
         nx.write_gexf(self.graph, file)
 
-    def to_gml(self, file="bauprofesser.gml"):
+    def to_gml(self, file="mietgraph.gml"):
         """
         Write to GML format
         :param file:
@@ -119,7 +159,7 @@ class BauGraph:
         frequency = {k:v/len(self.graph) for k,v in frequency.items()}
         return attr_set, frequency
 
-    def add_keyword_in_text(self, check=["text", "title", "paragraph", "honorar"]):
+    def add_keyword_in_text(self, check=["text", "title", "crosslinks"]):
         """
         Add a connection if the title of a keyword node occurrs in an attribute of some other node.
         :param check:  the attribute list to check if a keyword occurrs
@@ -171,15 +211,15 @@ def main():
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('--format', dest='format', default="gml",
                         help='Choose between .gexf and .gml. (default: gml)')
-    parser.add_argument('--output', dest='output', default="Baugraph.gml",
+    parser.add_argument('--output', dest='output', default="MietGraph.gml",
                         help='Where to save the file.')
     parser.add_argument('--input', dest='input', default="output/",
                         help='The result file of the crawling process')
 
     args = parser.parse_args()
 
-    b = BauGraph(args.input)
-    b.add_keyword_in_text(check=["text", "paragraph", "honorar", "title"])
+    b = MietGraph(args.input)
+    b.add_keyword_in_text(check=["text", "crosslinks"])
     b.stats()
     b.add_clustering()
     b.add_pagerank()
@@ -199,6 +239,6 @@ def main():
 # # if __name__ == "__main__":
 # #     main()
 #
-# bg = BauGraph("output/")
+# bg = MietGraph("output/")
 # bg.add_keyword_in_text()
 # bg.graph
