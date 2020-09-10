@@ -38,7 +38,7 @@ class MietrechtEinfachSpider(scrapy.Spider):
             tmp_item = MietrechtEinfachItem()
             tmp_item['page_url'] =  str(response.url)
             tmp_item['title'] = response.xpath('//*[@id="right"]/h2/text()').get()
-            if not tmp_item['title'] or "Checkliste" in tmp_item['titel']:
+            if not tmp_item['title'] or "Checkliste" in tmp_item['title']:
                 tmp_item['title'] = response.xpath('//*[@id="right"]/h1/text()').get()
             text = re.sub("[\n\r\t]","",response.xpath('string(//*[@id="right"])').get())
             text = re.sub("<.*?\>","",text) #delete all strings between angle brackets
