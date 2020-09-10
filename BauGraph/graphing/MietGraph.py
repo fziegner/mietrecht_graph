@@ -8,7 +8,27 @@ import pathlib
 import networkx as nx
 
 def parse_jurabasic(file = "output/jurabasic.json"):
-    print("123")
+    file = pathlib.Path(file)
+    if not file.exists():
+        print(f"No such file: {file.name}.")
+        return False
+
+    with open(file, "r") as f:
+        content = json.load(f)
+
+    g=nx.DiGraph()
+    g.graph["name"] = "jurabasic"
+
+    for entry in content:
+        node = {"url": entry["page_url"],
+                "text": entry["text"]}
+        g.add_node(entry["title"], **node)
+
+    for entry in content:
+        targets = [x for x in g.nodes if g.nodes[x].get("url","") in entry["crosslinks"]]
+        for t in targets:
+            g.add_edge(entry["title"], t, t="crosslink")
+    return g
 
 def parse_mietrechteinfach(file = "output/mietrechteinfach.json"):
     file = pathlib.Path(file)
@@ -86,11 +106,11 @@ class MietGraph:
         :param dir: The output directory of the crawling process
         """
         dir=pathlib.Path(dir)
-        #self.jb = parse_jurabasic(dir / "jurabasic.json")
+        self.jb = parse_jurabasic(dir / "jurabasic.json")
         self.mre = parse_mietrechteinfach(dir / "mietrechteinfach.json")
         self.mrl = parse_mietrechtlexikon(dir / "mietrechtlexikon.json")
 
-        self.all = [#self.jb,
+        self.all = [self.jb,
                     self.mre,
                     self.mrl]
 
@@ -221,8 +241,6 @@ def main():
     b = MietGraph(args.input)
     b.add_keyword_in_text(check=["text", "crosslinks"])
     b.stats()
-    b.add_clustering()
-    b.add_pagerank()
 
     if args.output.endswith(args.format):
         if args.format.endswith("gexf"):
