@@ -15,19 +15,30 @@ def parse_jurabasic(file = "output/jurabasic.json"):
 
     with open(file, "r") as f:
         content = json.load(f)
-
     g=nx.DiGraph()
     g.graph["name"] = "jurabasic"
 
+    node_label=0
     for entry in content:
-        node = {"url": entry["page_url"],
-                "text": entry["text"]}
-        g.add_node(entry["title"], **node)
+        if "sub_title" in entry:
+            node = {"url": entry["page_url"],
+                    "text": entry["text"],
+                    "name": entry["title"],
+                    "name2": entry["sub_title"]}
+        else:
+            node = {"url": entry["page_url"],
+                    "text": entry["text"],
+                    "name": entry["title"]}
+        g.add_node(node_label, **node)
+        g.add_edge(node_label, "JuraBasic", t="partof")
+        node_label+=1
 
+    node_label=0
     for entry in content:
         targets = [x for x in g.nodes if g.nodes[x].get("url","") in entry["crosslinks"]]
         for t in targets:
-            g.add_edge(entry["title"], t, t="crosslink")
+            g.add_edge(node_label, t, t="crosslink")
+        node_label+=1
     return g
 
 def parse_mietrechteinfach(file = "output/mietrechteinfach.json"):
@@ -44,8 +55,10 @@ def parse_mietrechteinfach(file = "output/mietrechteinfach.json"):
 
     for entry in content:
         node = {"url": entry["page_url"],
-                "text": entry["text"]}
+                "text": entry["text"],
+                "name": entry["title"]}
         g.add_node(entry["title"], **node)
+        g.add_edge(entry["title"], "MietrechtEinfach", t="partof")
 
     for entry in content:
         targets = [x for x in g.nodes if g.nodes[x].get("url","") in entry["crosslinks"]]
@@ -67,8 +80,10 @@ def parse_mietrechtlexikon(file = "output/mietrechtlexikon.json"):
 
     for entry in content:
         node = {"url": entry["page_url"],
-                "text": entry["text"]}
+                "text": entry["text"],
+                "name": entry["title"]}
         g.add_node(entry["title"], **node)
+        g.add_edge(entry["title"], "MietrechtLexikon", t="partof")
 
     for entry in content:
         targets = [x for x in g.nodes if g.nodes[x].get("url","") in entry["crosslinks"]]
@@ -113,7 +128,6 @@ class MietGraph:
         self.all = [self.jb,
                     self.mre,
                     self.mrl]
-
         self.graph = recursive_compose(self.all)
 
     def compare_parts(self):
@@ -239,7 +253,7 @@ def main():
     args = parser.parse_args()
 
     b = MietGraph(args.input)
-    b.add_keyword_in_text(check=["text", "crosslinks"])
+    b.add_keyword_in_text(check=["url", "text", "name", "name2", "crosslinks"])
     b.stats()
 
     if args.output.endswith(args.format):

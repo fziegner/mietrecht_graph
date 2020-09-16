@@ -10,7 +10,7 @@ class MietrechtLexikonItem(scrapy.Item):
 class MietrechtLexikonSpider(scrapy.Spider):
 
     name = "MietrechtLexikon"
-    start_urls = ['https://www.mietrechtslexikon.de/a1lexikon2/katalog_neu.htm']
+    start_urls = ['http://www.mietrechtslexikon.de/a1lexikon2/katalog_neu.htm']
 
     def parse(self, response):
 
@@ -29,7 +29,11 @@ class MietrechtLexikonSpider(scrapy.Spider):
 
         if len(element) == 1:
             tmp_item = MietrechtLexikonItem()
-            tmp_item['page_url'] =  str(response.url)
+            url = str(response.url)
+            if url.startswith("https"):
+                tmp_item['page_url'] =  str(response.url).replace("https","http")
+            else:
+                tmp_item['page_url'] =  str(response.url)
             tmp_item['title'] = response.xpath('//*[@class="column one"]/h1/text()').get()
             sub_title = response.xpath('string(//*[@class="the_content_wrapper"]/h2)').get()
             if sub_title:
