@@ -20,15 +20,20 @@ def parse_jurabasic(file = "output/jurabasic.json"):
 
     node_label=0
     for entry in content:
+        for value in entry:
+            entry[value] = str(entry[value])
         if "sub_title" in entry:
             node = {"url": entry["page_url"],
+                    "t": "jurabasic",
                     "text": entry["text"],
                     "name": entry["title"],
                     "name2": entry["sub_title"]}
         else:
             node = {"url": entry["page_url"],
+                    "t": "crosslink",
                     "text": entry["text"],
                     "name": entry["title"]}
+
         g.add_node(node_label, **node)
         g.add_edge(node_label, "JuraBasic", t="partof")
         node_label+=1
@@ -53,17 +58,24 @@ def parse_mietrechteinfach(file = "output/mietrechteinfach.json"):
     g=nx.DiGraph()
     g.graph["name"] = "mietrechteinfach"
 
+    node_label=10000
     for entry in content:
+        for value in entry:
+            entry[value] = str(entry[value])
         node = {"url": entry["page_url"],
+                "t": "crosslink",
                 "text": entry["text"],
                 "name": entry["title"]}
-        g.add_node(entry["title"], **node)
-        g.add_edge(entry["title"], "MietrechtEinfach", t="partof")
+        g.add_node(node_label, **node)
+        g.add_edge(node_label, "MietrechtEinfach", t="partof")
+        node_label+=1
 
+    node_label=10000
     for entry in content:
         targets = [x for x in g.nodes if g.nodes[x].get("url","") in entry["crosslinks"]]
         for t in targets:
-            g.add_edge(entry["title"], t, t="crosslink")
+            g.add_edge(node_label, t, t="crosslink")
+        node_label+=1
     return g
 
 def parse_mietrechtlexikon(file = "output/mietrechtlexikon.json"):
@@ -78,17 +90,26 @@ def parse_mietrechtlexikon(file = "output/mietrechtlexikon.json"):
     g=nx.DiGraph()
     g.graph["name"] = "mietrechtlexikon"
 
+    node_label=20000
     for entry in content:
+        for value in entry:
+            entry[value] = str(entry[value])
         node = {"url": entry["page_url"],
+                "t": "crosslink",
                 "text": entry["text"],
-                "name": entry["title"]}
-        g.add_node(entry["title"], **node)
-        g.add_edge(entry["title"], "MietrechtLexikon", t="partof")
+                "name": entry["title"],
+                "name2": entry["sub_title"]
+                }
+        g.add_node(node_label, **node)
+        g.add_edge(node_label, "MietrechtLexikon", t="partof")
+        node_label+=1
 
+    node_label=20000
     for entry in content:
         targets = [x for x in g.nodes if g.nodes[x].get("url","") in entry["crosslinks"]]
         for t in targets:
-            g.add_edge(entry["title"], t, t="crosslink")
+            g.add_edge(node_label, t, t="crosslink")
+        node_label+=1
     return g
 
 def recursive_compose(l):
@@ -199,14 +220,39 @@ class MietGraph:
         :param check:  the attribute list to check if a keyword occurrs
         :return:
         """
-        keywords = [x[0] for x in self.graph.nodes(True) if x[1].get("t", "") == "keyword"]
 
+        node_dict = {}
+        stopwords = ["Kündigung", "Miete", "Mietvertrag", "Mieter", "Vermieter"]
+        for node, attr in self.graph.nodes(True):
+            if "name" in attr:
+                node_dict.update({attr["name"]:node})
+        #print(dict)
+
+        keywords = [x[1].get("name") for x in self.graph.nodes(True) if x[1].get("t", "") == "crosslink"]
         for val in check:
             for node, attr in tqdm(self.graph.nodes(True)):
                 if not val in attr:
                     continue
-                contains = [kw for kw in keywords if " " + kw + " "  in attr[val]]
-                self.graph.add_weighted_edges_from([(node, kw, 0.5) for kw in contains if node != kw])
+                contains = [kw for kw in keywords if " " + kw + " "  in attr[val] and kw not in stopwords]
+                contains = list(set(contains))
+                #print(contains)
+                self.graph.add_weighted_edges_from([(node, node_dict[kw], 0.5) for kw in contains if node != node_dict[kw]])
+
+        node_dict = {}
+        for node, attr in self.graph.nodes(True):
+            if "name2" in attr:
+                node_dict.update({attr["name2"]:node})
+
+        keywords = [x[1].get("name2") for x in self.graph.nodes(True) if x[1].get("t", "") == "jurabasic"]
+        #print(keywords)
+        for val in check:
+            for node, attr in tqdm(self.graph.nodes(True)):
+                if not val in attr:
+                    continue
+                contains = [kw for kw in keywords if " " + kw + " "  in attr[val] and kw not in stopwords]
+                contains = list(set(contains))
+                #print(contains)
+                self.graph.add_weighted_edges_from([(node, node_dict[kw], 0.5) for kw in contains if node != node_dict[kw]])
 
     def highest_ranked_neighbours(self, q):
         """
