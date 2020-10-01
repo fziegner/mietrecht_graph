@@ -11,15 +11,11 @@ def go(dir=Path("./output")):
         dir.mkdir()
 
     process = CrawlerProcess(get_project_settings())
-    #process.crawl(BauprofessorSpider,o=dir/"bauprofessor.json")
-    #process.crawl(HausberaterSpider,o=dir/"hb.json")
-    #process.crawl(BeuthVOBSpider,o=dir/"baunormenlexikonvob.json")
-    #process.crawl(BeuthDINSpider,o=dir/"baunormenlexikondin.json")
-    #process.crawl(BeuthLexSpider,o=dir/"beutlex.json")
-    #process.crawl(HOAISpider,o=dir/"hoai.json")
     process.crawl(JuraBasicSpider,o=dir/"jurabasic.json")
-    #process.crawl(MieterbundSpider,o=dir/"mieterbund.json")
     process.crawl(MietrechtEinfachSpider,o=dir/"mietrechteinfach.json")
     process.crawl(MietrechtLexikonSpider,o=dir/"mietrechtlexikon.json")
+    process.crawl(BGBSpider,o=dir/"bgb.json")
+    process.crawl(BMGEVSpider,o=dir/"bmgev.json")
+    process.crawl(RechtslexikonSpider,o=dir/"rechtslexikon.json")
 
     process.start()
