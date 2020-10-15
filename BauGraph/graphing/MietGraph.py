@@ -1,11 +1,14 @@
 import itertools
 import pathlib
 import tempfile
+import copy
 from tqdm import tqdm
 
 import json
 import pathlib
 import networkx as nx
+
+crosslink_dict = {}
 
 def parse_jurabasic(file = "output/jurabasic.json"):
     file = pathlib.Path(file)
@@ -15,7 +18,7 @@ def parse_jurabasic(file = "output/jurabasic.json"):
 
     with open(file, "r") as f:
         content = json.load(f)
-    g=nx.DiGraph()
+    g = nx.DiGraph()
     g.graph["name"] = "jurabasic"
 
     node_label=0
@@ -24,17 +27,16 @@ def parse_jurabasic(file = "output/jurabasic.json"):
             entry[value] = str(entry[value])
         if "sub_title" in entry:
             node = {"url": entry["page_url"],
-                    "t": "jurabasic",
-                    "text": entry["text"],
-                    "name": entry["title"],
-                    "name2": entry["sub_title"]}
+                    "title": entry["title"],
+                    "section": entry["sub_title"],
+                    "text": entry["text"]}
         else:
             node = {"url": entry["page_url"],
-                    "t": "crosslink",
-                    "text": entry["text"],
-                    "name": entry["title"]}
+                    "title": entry["title"],
+                    "text": entry["text"]}
 
         g.add_node(node_label, **node)
+        crosslink_dict[node_label] = entry["crosslinks"]
         g.add_edge(node_label, "JuraBasic", t="partof")
         node_label+=1
 
@@ -42,7 +44,8 @@ def parse_jurabasic(file = "output/jurabasic.json"):
     for entry in content:
         targets = [x for x in g.nodes if g.nodes[x].get("url","") in entry["crosslinks"]]
         for t in targets:
-            g.add_edge(node_label, t, t="crosslink")
+            if node_label != t:
+                g.add_edge(node_label, t, t="crosslink")
         node_label+=1
     return g
 
@@ -63,10 +66,10 @@ def parse_mietrechteinfach(file = "output/mietrechteinfach.json"):
         for value in entry:
             entry[value] = str(entry[value])
         node = {"url": entry["page_url"],
-                "t": "crosslink",
-                "text": entry["text"],
-                "name": entry["title"]}
+                "title": entry["title"],
+                "text": entry["text"]}
         g.add_node(node_label, **node)
+        crosslink_dict[node_label] = entry["crosslinks"]
         g.add_edge(node_label, "MietrechtEinfach", t="partof")
         node_label+=1
 
@@ -74,7 +77,8 @@ def parse_mietrechteinfach(file = "output/mietrechteinfach.json"):
     for entry in content:
         targets = [x for x in g.nodes if g.nodes[x].get("url","") in entry["crosslinks"]]
         for t in targets:
-            g.add_edge(node_label, t, t="crosslink")
+            if node_label != t:
+                g.add_edge(node_label, t, t="crosslink")
         node_label+=1
     return g
 
@@ -95,12 +99,11 @@ def parse_mietrechtlexikon(file = "output/mietrechtlexikon.json"):
         for value in entry:
             entry[value] = str(entry[value])
         node = {"url": entry["page_url"],
-                "t": "crosslink",
-                "text": entry["text"],
-                "name": entry["title"],
-                "name2": entry["sub_title"]
-                }
+                "title": entry["title"],
+                "section": entry["sub_title"],
+                "text": entry["text"]}
         g.add_node(node_label, **node)
+        crosslink_dict[node_label] = entry["crosslinks"]
         g.add_edge(node_label, "MietrechtLexikon", t="partof")
         node_label+=1
 
@@ -108,7 +111,98 @@ def parse_mietrechtlexikon(file = "output/mietrechtlexikon.json"):
     for entry in content:
         targets = [x for x in g.nodes if g.nodes[x].get("url","") in entry["crosslinks"]]
         for t in targets:
-            g.add_edge(node_label, t, t="crosslink")
+            if node_label != t:
+                g.add_edge(node_label, t, t="crosslink")
+        node_label+=1
+    return g
+
+def parse_bgb(file = "output/bgb.json"):
+    file = pathlib.Path(file)
+    if not file.exists():
+        print(f"No such file: {file.name}.")
+        return False
+
+    with open(file, "r") as f:
+        content = json.load(f)
+
+    g=nx.DiGraph()
+    g.graph["name"] = "bgb"
+
+    node_label=30000
+    for entry in content:
+        for value in entry:
+            entry[value] = str(entry[value])
+        node = {"url": entry["page_url"],
+                "title": entry["title"],
+                "text": entry["text"]}
+        g.add_node(node_label, **node)
+        g.add_edge(node_label, "BGB", t="partof")
+        node_label+=1
+    return g
+
+def parse_bmgev(file = "output/bmgev.json"):
+    file = pathlib.Path(file)
+    if not file.exists():
+        print(f"No such file: {file.name}.")
+        return False
+
+    with open(file, "r") as f:
+        content = json.load(f)
+
+    g=nx.DiGraph()
+    g.graph["name"] = "bmgev"
+
+    node_label=40000
+    for entry in content:
+        for value in entry:
+            entry[value] = str(entry[value])
+        node = {"url": entry["page_url"],
+                "title": entry["title"],
+                "text": entry["text"]}
+        g.add_node(node_label, **node)
+        crosslink_dict[node_label] = entry["crosslinks"]
+        g.add_edge(node_label, "BMGEV", t="partof")
+        node_label+=1
+
+    node_label=40000
+    for entry in content:
+        targets = [x for x in g.nodes if g.nodes[x].get("url","") in entry["crosslinks"]]
+        for t in targets:
+            if node_label != t:
+                g.add_edge(node_label, t, t="crosslink")
+        node_label+=1
+    return g
+
+
+def parse_rechtslexikon(file = "output/rechtslexikon.json"):
+    file = pathlib.Path(file)
+    if not file.exists():
+        print(f"No such file: {file.name}.")
+        return False
+
+    with open(file, "r") as f:
+        content = json.load(f)
+
+    g=nx.DiGraph()
+    g.graph["name"] = "rechtslexikon"
+
+    node_label=50000
+    for entry in content:
+        for value in entry:
+            entry[value] = str(entry[value])
+        node = {"url": entry["page_url"],
+                "title": entry["title"],
+                "text": entry["text"]}
+        g.add_node(node_label, **node)
+        g.add_edge(node_label, "Rechtslexikon", t="partof")
+        node_label+=1
+
+    node_label=50000
+    for entry in content:
+        targets = [x for x in g.nodes if g.nodes[x].get("url","") in entry["crosslinks"]]
+        for t in targets:
+            if node_label != t:
+                g.add_edge(node_label, t, t="crosslink")
         node_label+=1
     return g
 
@@ -145,10 +239,17 @@ class MietGraph:
         self.jb = parse_jurabasic(dir / "jurabasic.json")
         self.mre = parse_mietrechteinfach(dir / "mietrechteinfach.json")
         self.mrl = parse_mietrechtlexikon(dir / "mietrechtlexikon.json")
+        self.bgb = parse_bgb(dir / "bgb.json")
+        self.bmgev = parse_bmgev(dir / "bmgev.json")
+        self.rl = parse_rechtslexikon(dir / "rechtslexikon.json")
 
         self.all = [self.jb,
                     self.mre,
-                    self.mrl]
+                    self.mrl,
+                    self.bgb,
+                    self.bmgev,
+                    self.rl]
+
         self.graph = recursive_compose(self.all)
 
     def compare_parts(self):
@@ -214,6 +315,13 @@ class MietGraph:
         frequency = {k:v/len(self.graph) for k,v in frequency.items()}
         return attr_set, frequency
 
+    def add_crosslinks(self):
+        c  = copy.deepcopy(self.graph.nodes(True))
+        for node, attr in c:
+            for label in crosslink_dict:
+                if "url" in attr and attr["url"] in crosslink_dict[label] and node != label:
+                    self.graph.add_edge(node, label, t="crosslink")
+
     def add_keyword_in_text(self, check=["text", "title", "crosslinks"]):
         """
         Add a connection if the title of a keyword node occurrs in an attribute of some other node.
@@ -224,11 +332,11 @@ class MietGraph:
         node_dict = {}
         stopwords = ["Kündigung", "Miete", "Mietvertrag", "Mieter", "Vermieter"]
         for node, attr in self.graph.nodes(True):
-            if "name" in attr:
-                node_dict.update({attr["name"]:node})
+            if "title" in attr:
+                node_dict.update({attr["title"]:node})
         #print(dict)
 
-        keywords = [x[1].get("name") for x in self.graph.nodes(True) if x[1].get("t", "") == "crosslink"]
+        keywords = [x[1].get("title") for x in self.graph.nodes(True) if "jura-basic" not in x[1].get("url","") and x[1].get("title") is not None]
         for val in check:
             for node, attr in tqdm(self.graph.nodes(True)):
                 if not val in attr:
@@ -236,14 +344,14 @@ class MietGraph:
                 contains = [kw for kw in keywords if " " + kw + " "  in attr[val] and kw not in stopwords]
                 contains = list(set(contains))
                 #print(contains)
-                self.graph.add_weighted_edges_from([(node, node_dict[kw], 0.5) for kw in contains if node != node_dict[kw]])
+                self.graph.add_weighted_edges_from([(node, node_dict[kw], 0.5) for kw in contains if node != node_dict[kw]], t="keyword")
 
         node_dict = {}
         for node, attr in self.graph.nodes(True):
-            if "name2" in attr:
-                node_dict.update({attr["name2"]:node})
+            if "section" in attr:
+                node_dict.update({attr["section"]:node})
 
-        keywords = [x[1].get("name2") for x in self.graph.nodes(True) if x[1].get("t", "") == "jurabasic"]
+        keywords = [x[1].get("section") for x in self.graph.nodes(True) if "jura-basic" in x[1].get("url", "") and x[1].get("section") is not None]
         #print(keywords)
         for val in check:
             for node, attr in tqdm(self.graph.nodes(True)):
@@ -252,7 +360,7 @@ class MietGraph:
                 contains = [kw for kw in keywords if " " + kw + " "  in attr[val] and kw not in stopwords]
                 contains = list(set(contains))
                 #print(contains)
-                self.graph.add_weighted_edges_from([(node, node_dict[kw], 0.5) for kw in contains if node != node_dict[kw]])
+                self.graph.add_weighted_edges_from([(node, node_dict[kw], 0.5) for kw in contains if node != node_dict[kw]], t="keyword")
 
     def highest_ranked_neighbours(self, q):
         """
