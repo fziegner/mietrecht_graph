@@ -5,6 +5,7 @@ class BMGEVItem(scrapy.Item):
     page_url = scrapy.Field()
     title = scrapy.Field()
     text = scrapy.Field()
+    crosslinks = scrapy.Field()
 
 class BMGEVSpider(scrapy.Spider):
 
@@ -35,6 +36,7 @@ class BMGEVSpider(scrapy.Spider):
             tmp_item['page_url'] =  str(response.url)
             tmp_item['title'] = response.xpath("string(//*[@class='news-single-item']/h1)").get()
             tmp_item['text'] = re.sub("[\n\r\t]","",response.xpath("string(//*[@class='news-single-item'])").get()).split("Zurück")[0].strip().split(tmp_item['title'],1)[1]
+            tmp_item['crosslinks'] = response.xpath("//*[@class='news-single-item']//a/@href[not(ancestor::div/@class='news-single-backlink')]").getall()
             yield tmp_item
         else:
             print("Nothing to Scrape!")

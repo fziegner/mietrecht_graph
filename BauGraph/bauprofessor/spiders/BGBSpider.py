@@ -17,7 +17,7 @@ class BGBSpider(scrapy.Spider):
         cleaned_links = []
         for link in links:
             if link.startswith("_"):
-                cleaned_links.append("https://www.gesetze-im-internet.de/bgb/" + link)
+                cleaned_links.append("http://www.gesetze-im-internet.de/bgb/" + link)
 
         element = response.xpath('//*[@id="blaettercontainer_12793"]')
 

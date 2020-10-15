@@ -11,6 +11,9 @@ class RechtslexikonSpider(scrapy.Spider):
 
     name = "Rechtslexikon"
     start_urls = ['http://www.rechtslexikon.net/d/miete/miete.htm']
+    custom_settings = {
+        'DEPTH_LIMIT': 2
+    }
 
     def parse(self, response):
 
