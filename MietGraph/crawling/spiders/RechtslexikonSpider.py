@@ -23,7 +23,7 @@ class RechtslexikonSpider(scrapy.Spider):
                     "http://www.rechtslexikon.net/d/mieterabwesenheit/mieterabwesenheit.htm",
                     "http://www.rechtslexikon.net/d/wohnraummietvertrag/wohnraummietvertrag.htm"]
     custom_settings = {
-        'DEPTH_LIMIT': 2
+        'DEPTH_LIMIT': 1
     }
 
     def parse(self, response):

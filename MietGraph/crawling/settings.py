@@ -11,8 +11,8 @@
 
 BOT_NAME = 'bauprofessor'
 
-SPIDER_MODULES = ['bauprofessor.spiders']
-NEWSPIDER_MODULE = 'bauprofessor.spiders'
+SPIDER_MODULES = ['crawling.spiders']
+NEWSPIDER_MODULE = 'crawling.spiders'
 
 LOG_STDOUT = True
 LOG_FILE = './scrapy_output.txt'

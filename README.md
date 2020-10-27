@@ -4,12 +4,12 @@ Creating a knowledge graph about the rent stuff.
 This is a fork of [BauGraph](https://git.informatik.uni-leipzig.de/dmw/civil_engineering/bauprofessor_crawler)
 
 
-## Create the graph 
+## Create the graph
 To create the graph there are two steps. First we have to crawl a few websites then we create the graph.
 
 
 1. Clone the repository ```git clone https://git.informatik.uni-leipzig.de/information_extraction_group/bauprofessor_crawler.git```
-2. Change into the repository folder and install the necessary requirements with ```pip install -r requirements```
+2. Change into the repository folder and install the necessary requirements with ```pip install -r requirements.txt```
 3. Change into the directory ```cd MietGraph/crawling``` and run the crawling with ```./run.sh [output_folder]```
 4. Change to MietGraph/graphing, move the output from step 3 to a folder for input and run ```python MietGraph.py --input=[input_folder] --output=MietGraph.graphml``` to generate the graph. (```python MietGraph.py -h``` for more options)
 5. ???
@@ -25,10 +25,11 @@ After that you can invoke the MietGraph class and generate the Graph in python e
 >> from MietGraph import MietGraph
 >> g = MietGraph("input/")
 >> g.add_keyword_in_text()
+>> g.add_crosslinks()
 >> g.graph
 <networkx.classes.digraph.DiGraph at 0x7f38243927c0>
 ```
-You can also get a igraph representation with 
+You can also get a igraph representation with
 ```
 g.igraph()
 ```
