@@ -54,8 +54,3 @@ class MietrechtEinfachSpider(scrapy.Spider):
             yield tmp_item
         else:
             print("Nothing to Scrape!")
-
-        #filename = 'quotes-%s.html' % page
-        #with open(filename, 'wb') as f:
-        #    f.write(response.body)
-        #self.log('Saved file %s' % filename)

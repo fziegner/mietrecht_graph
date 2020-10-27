@@ -7,8 +7,10 @@ class BGBItem(scrapy.Item):
 
 class BGBSpider(scrapy.Spider):
 
+    first_article = 535
+    last_article = 581
     name = "BGB"
-    start_urls = ['https://www.gesetze-im-internet.de/bgb/__535.html',]
+    start_urls = [f'https://www.gesetze-im-internet.de/bgb/__{first_article}.html',]
 
     def parse(self, response):
 
@@ -31,5 +33,5 @@ class BGBSpider(scrapy.Spider):
             print("Nothing to Scrape!")
 
         for link in cleaned_links:
-            if not '581' in link:
+            if not f'{self.last_article}' in link:
                 yield scrapy.Request(link, callback=self.parse)

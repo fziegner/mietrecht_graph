@@ -10,7 +10,18 @@ class RechtslexikonItem(scrapy.Item):
 class RechtslexikonSpider(scrapy.Spider):
 
     name = "Rechtslexikon"
-    start_urls = ['http://www.rechtslexikon.net/d/miete/miete.htm']
+    start_urls = ["http://www.rechtslexikon.net/d/mietvertrag/mietvertrag.htm",
+                    "http://www.rechtslexikon.net/d/mietspiegel/mietspiegel.htm",
+                    "http://www.rechtslexikon.net/d/mietrecht/mietrecht.htm",
+                    "http://www.rechtslexikon.net/d/mietkaution/mietkaution.htm",
+                    "http://www.rechtslexikon.net/d/mieterh%C3%B6hung/mieterh%C3%B6hung.htm",
+                    "http://www.rechtslexikon.net/d/mietaufhebungsklage/mietaufhebungsklage.htm",
+                    "http://www.rechtslexikon.net/d/mietaufhebungsvereinbarung/mietaufhebungsvereinbarung.htm",
+                    "http://www.rechtslexikon.net/d/mietausfallwagnis/mietausfallwagnis.htm",
+                    "http://www.rechtslexikon.net/d/mieter/mieter.htm",
+                    "http://www.rechtslexikon.net/d/miete/miete.htm",
+                    "http://www.rechtslexikon.net/d/mieterabwesenheit/mieterabwesenheit.htm",
+                    "http://www.rechtslexikon.net/d/wohnraummietvertrag/wohnraummietvertrag.htm"]
     custom_settings = {
         'DEPTH_LIMIT': 2
     }

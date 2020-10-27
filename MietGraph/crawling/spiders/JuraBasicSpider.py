@@ -11,8 +11,6 @@ class JuraBasicItem(scrapy.Item):
 
 class JuraBasicSpider(scrapy.Spider):
 
-    #links = Response.xpath('//*[@class="button_details"]/@href').getall()
-    #start_urls = ["http://www.jura-basic.de/" + link for link in links]
     name = "JuraBasic"
     start_urls = ['http://www.jura-basic.de/aufruf.php?file=&pp=&art=6&find=t_1468yxymietrecht',
                      'http://www.jura-basic.de/aufruf.php?file=&pp=&art=6&find=t_1488yxymietrecht',
@@ -64,15 +62,9 @@ class JuraBasicSpider(scrapy.Spider):
                 else:
                     cleaned_crosslinks.append(link)
             tmp_item['crosslinks'] = cleaned_crosslinks
-            #tmp_item['category'] = response.xpath('//*[@class="text_titel"]/text()').get()
             yield tmp_item
         else:
             print("Nothing to Scrape!")
 
         for link in cleaned_links:
             yield scrapy.Request(link, callback=self.parse)
-
-        #filename = 'quotes-%s.html' % page
-        #with open(filename, 'wb') as f:
-        #    f.write(response.body)
-        #self.log('Saved file %s' % filename)

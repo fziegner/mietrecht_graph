@@ -1,8 +1,8 @@
 .mypy_cache
-BauGraph/bauprofessor/__pycache__/*
-BauGraph/bauprofessor/spiders/__pycache__/*
+MietGraph/crawling/__pycache__/*
+MietGraph/crawling/spiders/__pycache__/*
 \.idea/
 
-BauGraph/__pycache__/
+MietGraph/__pycache__/
 
 *.pyc

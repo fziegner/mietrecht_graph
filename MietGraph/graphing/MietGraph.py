@@ -7,6 +7,7 @@ from tqdm import tqdm
 import json
 import pathlib
 import networkx as nx
+import re
 
 crosslink_dict = {}
 
@@ -18,34 +19,55 @@ def parse_jurabasic(file = "output/jurabasic.json"):
 
     with open(file, "r") as f:
         content = json.load(f)
+
     g = nx.DiGraph()
-    g.graph["name"] = "jurabasic"
 
     node_label=0
+    g.add_node(node_label, name="JuraBasic", label="Lexikon")
+    bgh_dict = {}
     for entry in content:
+        node_label+=1
         for value in entry:
             entry[value] = str(entry[value])
         if "sub_title" in entry:
             node = {"url": entry["page_url"],
                     "title": entry["title"],
                     "section": entry["sub_title"],
-                    "text": entry["text"]}
+                    "name": entry["title"] + ": " + entry["sub_title"],
+                    "text": entry["text"],
+                    "label": "Erklärung"}
         else:
             node = {"url": entry["page_url"],
                     "title": entry["title"],
-                    "text": entry["text"]}
+                    "name": entry["title"],
+                    "text": entry["text"],
+                    "label": "Erklärung"}
 
         g.add_node(node_label, **node)
         crosslink_dict[node_label] = entry["crosslinks"]
-        g.add_edge(node_label, "JuraBasic", t="partof")
-        node_label+=1
+        g.add_edge(node_label, 0, edgelabel="partof")
+
+        if entry["text"].find("BGH"):
+            bgh_entries = re.findall("VIII ZR \d+\/\d+", node["text"])
+            for entry in bgh_entries:
+                if entry not in bgh_dict:
+                    bgh_dict["AZ: " + entry] = [node_label]
+                else:
+                    bgh_dict["AZ: " + entry].append(node_label)
+
+    for key, value in bgh_dict.items():
+        bgh_node = {"name": key,
+                    "label": "BGH-Urteil"}
+        g.add_node(key, **bgh_node)
+        for v in value:
+            g.add_edge(key, v, edgelabel="bgh")
 
     node_label=0
     for entry in content:
-        targets = [x for x in g.nodes if g.nodes[x].get("url","") in entry["crosslinks"]]
+        targets = [x for x in g.nodes if g.nodes[x].get("url","None") in entry["crosslinks"]]
         for t in targets:
             if node_label != t:
-                g.add_edge(node_label, t, t="crosslink")
+                g.add_edge(node_label, t, edgelabel="crosslink")
         node_label+=1
     return g
 
@@ -59,26 +81,28 @@ def parse_mietrechteinfach(file = "output/mietrechteinfach.json"):
         content = json.load(f)
 
     g=nx.DiGraph()
-    g.graph["name"] = "mietrechteinfach"
 
     node_label=10000
+    g.add_node(node_label, name="MietrechtEinfach", label="Lexikon")
     for entry in content:
+        node_label+=1
         for value in entry:
             entry[value] = str(entry[value])
         node = {"url": entry["page_url"],
+                "name": entry["title"],
                 "title": entry["title"],
-                "text": entry["text"]}
+                "text": entry["text"],
+                "label": "Erklärung"}
         g.add_node(node_label, **node)
         crosslink_dict[node_label] = entry["crosslinks"]
-        g.add_edge(node_label, "MietrechtEinfach", t="partof")
-        node_label+=1
+        g.add_edge(node_label, 10000, edgelabel="partof")
 
     node_label=10000
     for entry in content:
         targets = [x for x in g.nodes if g.nodes[x].get("url","") in entry["crosslinks"]]
         for t in targets:
             if node_label != t:
-                g.add_edge(node_label, t, t="crosslink")
+                g.add_edge(node_label, t, edgelabel="crosslink")
         node_label+=1
     return g
 
@@ -92,27 +116,29 @@ def parse_mietrechtlexikon(file = "output/mietrechtlexikon.json"):
         content = json.load(f)
 
     g=nx.DiGraph()
-    g.graph["name"] = "mietrechtlexikon"
 
     node_label=20000
+    g.add_node(node_label, name="MietrechtLexikon", label="Lexikon")
     for entry in content:
+        node_label+=1
         for value in entry:
             entry[value] = str(entry[value])
         node = {"url": entry["page_url"],
+                "name": entry["title"] + ": " + entry["sub_title"],
                 "title": entry["title"],
                 "section": entry["sub_title"],
-                "text": entry["text"]}
+                "text": entry["text"],
+                "label": "None"}
         g.add_node(node_label, **node)
         crosslink_dict[node_label] = entry["crosslinks"]
-        g.add_edge(node_label, "MietrechtLexikon", t="partof")
-        node_label+=1
+        g.add_edge(node_label, 20000, edgelabel="partof")
 
     node_label=20000
     for entry in content:
         targets = [x for x in g.nodes if g.nodes[x].get("url","") in entry["crosslinks"]]
         for t in targets:
             if node_label != t:
-                g.add_edge(node_label, t, t="crosslink")
+                g.add_edge(node_label, t, edgelabel="crosslink")
         node_label+=1
     return g
 
@@ -126,18 +152,20 @@ def parse_bgb(file = "output/bgb.json"):
         content = json.load(f)
 
     g=nx.DiGraph()
-    g.graph["name"] = "bgb"
 
     node_label=30000
+    g.add_node(node_label, name="BGB", label="Lexikon")
     for entry in content:
+        node_label+=1
         for value in entry:
             entry[value] = str(entry[value])
         node = {"url": entry["page_url"],
+                "name": entry["title"],
                 "title": entry["title"],
-                "text": entry["text"]}
+                "text": entry["text"],
+                "label": "Gesetzestext"}
         g.add_node(node_label, **node)
-        g.add_edge(node_label, "BGB", t="partof")
-        node_label+=1
+        g.add_edge(node_label, 30000, edgelabel="partof")
     return g
 
 def parse_bmgev(file = "output/bmgev.json"):
@@ -150,26 +178,45 @@ def parse_bmgev(file = "output/bmgev.json"):
         content = json.load(f)
 
     g=nx.DiGraph()
-    g.graph["name"] = "bmgev"
 
     node_label=40000
+    g.add_node(node_label, name="BMGEV", label="Lexikon")
+    bgh_dict = {}
     for entry in content:
+        node_label+=1
         for value in entry:
             entry[value] = str(entry[value])
         node = {"url": entry["page_url"],
+                "name": entry["title"] + ": " + entry["sub_title"],
                 "title": entry["title"],
-                "text": entry["text"]}
+                "section": entry["sub_title"],
+                "text": entry["text"],
+                "label": "Ratgeber"}
         g.add_node(node_label, **node)
         crosslink_dict[node_label] = entry["crosslinks"]
-        g.add_edge(node_label, "BMGEV", t="partof")
-        node_label+=1
+        g.add_edge(node_label, 40000, edgelabel="partof")
+
+        if entry["text"].find("BGH"):
+            bgh_entries = re.findall("AZ: VIII ZR \d+\/\d+", node["text"])
+            for entry in bgh_entries:
+                if entry not in bgh_dict:
+                    bgh_dict[entry] = [node_label]
+                else:
+                    bgh_dict[entry].append(node_label)
+
+    for key, value in bgh_dict.items():
+        bgh_node = {"name": key,
+                    "label": "BGH-Urteil"}
+        g.add_node(key, **bgh_node)
+        for v in value:
+            g.add_edge(key, v, edgelabel="bgh")
 
     node_label=40000
     for entry in content:
-        targets = [x for x in g.nodes if g.nodes[x].get("url","") in entry["crosslinks"]]
+        targets = [x for x in g.nodes if g.nodes[x].get("url","None") in entry["crosslinks"]]
         for t in targets:
             if node_label != t:
-                g.add_edge(node_label, t, t="crosslink")
+                g.add_edge(node_label, t, edgelabel="crosslink")
         node_label+=1
     return g
 
@@ -184,25 +231,27 @@ def parse_rechtslexikon(file = "output/rechtslexikon.json"):
         content = json.load(f)
 
     g=nx.DiGraph()
-    g.graph["name"] = "rechtslexikon"
 
     node_label=50000
+    g.add_node(node_label, name="Rechtslexikon", label="Lexikon")
     for entry in content:
+        node_label+=1
         for value in entry:
             entry[value] = str(entry[value])
         node = {"url": entry["page_url"],
+                "name": entry["title"],
                 "title": entry["title"],
-                "text": entry["text"]}
+                "text": entry["text"],
+                "label": "None"}
         g.add_node(node_label, **node)
-        g.add_edge(node_label, "Rechtslexikon", t="partof")
-        node_label+=1
+        g.add_edge(node_label, 50000, edgelabel="partof")
 
     node_label=50000
     for entry in content:
         targets = [x for x in g.nodes if g.nodes[x].get("url","") in entry["crosslinks"]]
         for t in targets:
             if node_label != t:
-                g.add_edge(node_label, t, t="crosslink")
+                g.add_edge(node_label, t, edgelabel="crosslink")
         node_label+=1
     return g
 
@@ -276,6 +325,22 @@ class MietGraph:
         """
         nx.write_gml(self.graph, file)
 
+    def to_graphml(self, file="mietgraph.graphml"):
+        """
+        Write to GraphML format
+        :param file:
+        :return:
+        """
+        nx.write_graphml(self.graph, file)
+
+    def to_pickle(self, file="mietgraph.p"):
+        """
+        Write to GraphML format
+        :param file:
+        :return:
+        """
+        nx.write_gpickle(self.graph, file)
+
     def igraph(self):
         """
         Return an igraph version of the graph
@@ -320,7 +385,7 @@ class MietGraph:
         for node, attr in c:
             for label in crosslink_dict:
                 if "url" in attr and attr["url"] in crosslink_dict[label] and node != label:
-                    self.graph.add_edge(node, label, t="crosslink")
+                    self.graph.add_edge(node, label, edgelabel="crosslink")
 
     def add_keyword_in_text(self, check=["text", "title", "crosslinks"]):
         """
@@ -344,7 +409,7 @@ class MietGraph:
                 contains = [kw for kw in keywords if " " + kw + " "  in attr[val] and kw not in stopwords]
                 contains = list(set(contains))
                 #print(contains)
-                self.graph.add_weighted_edges_from([(node, node_dict[kw], 0.5) for kw in contains if node != node_dict[kw]], t="keyword")
+                self.graph.add_weighted_edges_from([(node, node_dict[kw], 0.5) for kw in contains if node != node_dict[kw]], edgelabel="keyword")
 
         node_dict = {}
         for node, attr in self.graph.nodes(True):
@@ -360,7 +425,7 @@ class MietGraph:
                 contains = [kw for kw in keywords if " " + kw + " "  in attr[val] and kw not in stopwords]
                 contains = list(set(contains))
                 #print(contains)
-                self.graph.add_weighted_edges_from([(node, node_dict[kw], 0.5) for kw in contains if node != node_dict[kw]], t="keyword")
+                self.graph.add_weighted_edges_from([(node, node_dict[kw], 0.5) for kw in contains if node != node_dict[kw]], edgelabel="keyword")
 
     def highest_ranked_neighbours(self, q):
         """
@@ -397,34 +462,37 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description='Process some integers.')
-    parser.add_argument('--format', dest='format', default="gml",
-                        help='Choose between .gexf and .gml. (default: gml)')
-    parser.add_argument('--output', dest='output', default="MietGraph.gml",
+    parser.add_argument('--format', dest='format', default="graphml",
+                        help='Choose between .gexf, .gml, and .graphml. (default: graphml)')
+    parser.add_argument('--output', dest='output', default="MietGraph.graphml",
                         help='Where to save the file.')
-    parser.add_argument('--input', dest='input', default="output/",
+    parser.add_argument('--input', dest='input', default="input/",
                         help='The result file of the crawling process')
 
     args = parser.parse_args()
 
-    b = MietGraph(args.input)
-    b.add_keyword_in_text(check=["url", "text", "name", "name2", "crosslinks"])
-    b.stats()
+    mg = MietGraph(args.input)
+    mg.add_keyword_in_text()
+    mg.add_crosslinks()
+    mg.stats()
 
     if args.output.endswith(args.format):
         if args.format.endswith("gexf"):
-            b.to_gexf(args.output)
+            mg.to_gexf(args.output)
         elif args.format.endswith("gml"):
-            b.to_gml(args.output)
+            mg.to_gml(args.output)
+        elif args.format.endswith("graphml"):
+            mg.to_graphml(args.output)
     else:
         if args.format.endswith("gexf"):
-            b.to_gexf(args.output+"."+ args.format.replace(".",""))
+            mg.to_gexf(args.output+"."+ args.format.replace(".",""))
         elif args.format.endswith("gml"):
-            b.to_gml(args.output + "." + args.format.replace(".", ""))
+            mg.to_gml(args.output + "." + args.format.replace(".", ""))
+        elif args.format.endswith("graphml"):
+            mg.to_graphml(args.output + "." + args.format.replace(".", ""))
 
-# #
-# # if __name__ == "__main__":
-# #     main()
-#
+if __name__ == "__main__":
+    main()
 # bg = MietGraph("output/")
 # bg.add_keyword_in_text()
 # bg.graph

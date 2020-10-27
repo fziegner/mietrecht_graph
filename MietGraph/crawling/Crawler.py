@@ -1,7 +1,7 @@
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project import get_project_settings
 
-from BauGraph.bauprofessor.spiders import *
+from MietGraph.crawling.spiders import *
 from pathlib import Path
 
 def go(dir=Path("./output")):

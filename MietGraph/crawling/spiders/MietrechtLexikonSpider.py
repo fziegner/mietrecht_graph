@@ -35,6 +35,7 @@ class MietrechtLexikonSpider(scrapy.Spider):
                 tmp_item['page_url'] =  str(response.url).replace("https","http")
             else:
                 tmp_item['page_url'] =  str(response.url)
+
             if response.xpath('//*[@class="column one"]/h1/text()').get().startswith("Mietrecht: "):
                 tmp_item['title'] = response.xpath('//*[@class="column one"]/h1/text()').get().split("Mietrecht: ", 1)[1]
             else:
